@@ -1,7 +1,23 @@
-var cnv_conv = "conveyor1";
+
+const btn_id = [
+["pb1","x5"],
+["pb2","x6"],
+["pb3","x7"],
+["pb4","x8"]
+];
+btn_id.foreach(btn=>{
+    document.getElementById(btn[0])
+    .addEventListener('click',push(btn[1]));
+})
+function push(dev){
+    alert(dev);
+}
+
+
+let cnv_conv = "conveyor1";
 //Get canvas object data
-var conv = document.getElementById(cnv_conv);
-var con = conv.getContext("2d");//Get canvas context
+let conv = document.getElementById(cnv_conv);
+let con = conv.getContext("2d");//Get canvas context
 
 //background-color: green;
 con.fillStyle = "#060";
@@ -14,11 +30,11 @@ con.fill();
 //draw_wark(con,conv.width,conv.height);
 
 //function draw_wark(con,width,height){
-    var width = conv.width;
-    var height = conv.height;
+    let width = conv.width;
+    let height = conv.height;
     con.storkeStyle = "#999";
     con.fillStyle = "#aaa";
-    var len_wi = 150;
+    let len_wi = 150;
     con.beginPath();
     con.moveTo(width,height);
     con.lineTo(width,0);

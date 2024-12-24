@@ -8,5 +8,13 @@ div.up{
   margin: 0;
   position:fixed;
   top:0;
+  left:0;
   background-color: grey;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+div.up > div{
+  width:10%;
+  height:100%;
 }
