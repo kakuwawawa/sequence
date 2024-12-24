@@ -1,43 +1,3 @@
-
-//main
-//Variable declaration
-const x = new BitArray(8000);
-alert(x);/*
-let y = new BitArray(8000);
-
-let alldevice = {
-    "x":x,
-    "y":y
-}*/
-const btn_id = [
-["pb1","x5"],
-["pb2","x6"],
-["pb3","x7"],
-["pb4","x8"]];
-
-const lanp_id = [
-[document.getElementById("pl1"),"y2"],
-[document.getElementById("pl2"),"y3"],
-[document.getElementById("pl3"),"y4"],
-[document.getElementById("pl4"),"y5"]];
-
-const conveyor = [
-"conveyor1"];
-
-const con_info = get_canvas(conveyor);
-
-//Initial process
-settingid(btn_id);
-canvas_initial(con_info[0]);
-
-//Gameloop
-function gameloop(){
-    //Fill in the process
-    
-    requestAnimationFrame(gameloop);
-}
-
-//******************************//
 //User's function area
 
 class BitArray {
@@ -71,6 +31,9 @@ class BitArray {
 
         return (this.array[byteIndex] & (1 << bitIndex)) !== 0; // ビットをチェック
     }
+    log(){
+        alert(this.array);
+    }
 }
 
 function settingid(btn_id){
@@ -81,7 +44,8 @@ btn_id.forEach(btn=>{
 }
 
 function pb_push(dev){
-    alert(dev);
+    //alert(dev);
+    lanp_con(lanp_id[0]);
 }
 
 function get_canvas(canvas_id){
@@ -119,13 +83,53 @@ function canvas_initial(can_info){
 
 function str_dev(str){
     return {
-        header : str.slice(0,1),
-        index : str.slice(1)
+        'header' : str.slice(0,1),
+        'index' : parseInt(str.slice(1),10)
     };
 }
 
-/*function lanp_con(lanp_info){
+function lanp_con(lanp_info){
     device = str_dev(lanp_info[1]);
-    alert(Alldevice[device[header]].get(device[index]);)
+    alldevice[device['header']].set(device['index'],true);
+    alert(alldevice[device['header']].get(device['index'])
     
-}/*
+}
+
+//******************************//
+//main
+//Variable declaration
+const x = new BitArray(8000);
+const y = new BitArray(8000);
+
+let alldevice = {
+    "x":x,
+    "y":y
+};
+
+const btn_id = [
+["pb1","x5"],
+["pb2","x6"],
+["pb3","x7"],
+["pb4","x8"]];
+
+const lanp_id = [
+[document.getElementById("pl1"),"y2"],
+[document.getElementById("pl2"),"y3"],
+[document.getElementById("pl3"),"y4"],
+[document.getElementById("pl4"),"y5"]];
+
+const conveyor = [
+"conveyor1"];
+
+const con_info = get_canvas(conveyor);
+
+//Initial process
+settingid(btn_id);
+canvas_initial(con_info[0]);
+
+//Gameloop
+function gameloop(){
+    //Fill in the process
+    
+    requestAnimationFrame(gameloop);
+}
