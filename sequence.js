@@ -44,8 +44,10 @@ btn_id.forEach(btn=>{
 }
 
 function pb_push(dev){
-    //alert(dev);
-    lanp_con(lanp_id[0]);
+    alert(dev=="x5");
+    if(dev == "x5"){
+        alldevice['y'].set(2,true);
+    }
 }
 
 function get_canvas(canvas_id){
@@ -90,11 +92,10 @@ function str_dev(str){
 
 function lanp_con(lanp_info){
     device = str_dev(lanp_info[1]);
-    alldevice[device['header']].set(device['index'],true);
-    alert(alldevice[device['header']].get(device['index'])
-    
+    if(alldevice[device['header']].get(device['index'])){
+        lanp_info[0].style.backgroundColor = "red";
+    }
 }
-
 //******************************//
 //main
 //Variable declaration
@@ -126,10 +127,9 @@ const con_info = get_canvas(conveyor);
 //Initial process
 settingid(btn_id);
 canvas_initial(con_info[0]);
-
 //Gameloop
 function gameloop(){
     //Fill in the process
-    
+    lanp_con(lanp_id[0]);
     requestAnimationFrame(gameloop);
 }
