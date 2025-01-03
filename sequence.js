@@ -44,6 +44,10 @@ class conveyor{
         this.canH = can_info[0].height;
         this.workW = work_width / 2;
         this.workH = work_height / 2;
+        this.edge = {
+            "left":false,
+            "right":true
+        };
         this.speed = 5;
         this.boltMany = 4;
         this.bolt = new BitArray(this.boltMany);
@@ -52,16 +56,15 @@ class conveyor{
         }
         this.boltLs = {
         "left":{
-                0:"ls5",
-                1:"ls4",
-                2:"ls3",
-                3:"ls4"},
+                3:"ls5",
+                2:"ls4",
+                1:"ls3",
+                0:"ls2"},
         "right":{
                 0:"ls1"}};
         //background-color: green;
         this.con.fillStyle = "#060";
         this.con.fillRect(0,0,this.canW,this.canH);
-        this.setImg = this.con.getImageData(0,0,this.canW,this.canH);
     }
     write_work(x,y){
         if(x > this.canW - this.workW || x < this.workW){
@@ -79,14 +82,19 @@ class conveyor{
         const radius = this.workH / 4;
         const endAngle = Math.PI * 2;
         const boltCenter =[
-        [x , radius] , 
-        [x , radius * 3],
-        [x , radius * 5],
-        [x , radius * 7]
+        [x , work_down - radius] , 
+        [x , work_down - radius * 3],
+        [x , work_down - radius * 5],
+        [x , work_down - radius * 7]
         ];
-        this.con.putImageData(this.setImg,0,0);
+        if(typeof this.setImg != 'undefined'){
+            this.con.putImageData(this.setImg,this.imgX,this.imgY);
+        }
+        this.setImg = this.con.getImageData(work_left,work_up,this.workW * 2,this.workH * 2);
+        this.imgX = work_left;
+        this.imgY = work_up;
         this.con.fillStyle = "#aaa";
-        this.con.fillRect(work_left,work_up,work_right,work_down);
+        this.con.fillRect(work_left,work_up,this.workW * 2,this.workH * 2);
         this.con.fillStyle = "#999";
         this.con.beginPath();
         for(let i=0;i<this.boltMany;i++){
@@ -99,59 +107,66 @@ class conveyor{
     }
     move_left(alldevice,ls_dev){
         if(this.workX - this.speed - this.workW < 0){
-            for(let i=0; i<this.boltMany;i++){
-                if(this.bolt.get(i)){
-                    let dev_name = ls_dev[this.boltLs["left"][i]];
-                    let device = str_dev(dev_name);
-                    alldevice[device["header"]].set(device["index"],true);
-                }
-            }
+            this.edge["left"] = true;
+            this.edge["right"] = false;
         }
         else{
             this.write_work(this.workX -this.speed,this.workY);
+            this.edge["left"] = false;
+            this.edge["right"] = false;
         }
     }
     move_right(alldevice,ls_dev){
         if(this.workX + this.speed + this.workW > this.canW){
-            let dev_name = ls_dev[this.boltLs["right"][0]];
-            let device = str_dev(dev_name);
-            alldevice[device["header"]].set(device["index"],true);
+            this.edge["left"] = false;
+            this.edge["right"] = true;
             }
-        }
         else{
             this.write_work(this.workX+this.speed,this.workY);
+            this.edge["left"] = false;
+            this.edge["right"] = false;
         }
     }
 }
 
 //************************//
-//User's function area
-function settingid(btn_id){
+//User's function declaration
+function settingpb(alldevice,btn_id){
 btn_id.forEach(btn=>{
     let el_btn = document.getElementById(btn[0]);
-    el_btn.addEventListener('click',()=>pb_push(btn[1]));
-    el_btn.addEventListener('mouseup',()=>pb_up(btn[1]));
+    el_btn.addEventListener('pointerdown',()=>pb_push(alldevice,btn[1]));
+    el_btn.addEventListener('pointerup',()=>pb_up(alldevice,btn[1]));
 })
 }
 
-function pb_push(dev){
-    //alert(dev=="x5");
-    if(dev == "x5"){
-        alldevice['y'].set(2,true);
-    }
-    else if(dev == "x6"){
-        alldevice['y'].set(2,false);
-    }
-    else if(dev == "x7"){
-        alldevice['y'].set(3,true);
-    }
-    else if(dev == "x8"){
-        alldevice['y'].set(3,false);
-    }
+function pb_push(alldevice,dev){
+    let device = str_dev(dev);
+    alldevice[device["header"]].set(device["index"],true);
 }
 
-function pb_up(dev){
+function pb_up(alldevice,dev){
+    let device = str_dev(dev);
+    alldevice[device["header"]].set(device["index"],false);
+}
+
+function settingbolt(cnvObj,bolt_id,ls_dev){
+bolt_id.forEach(bolt=>{
+    let el_bolt = document.getElementById(bolt[0]);
+    el_bolt.addEventListener('click',()=>bolt_mode(cnvObj,bolt[1],ls_dev));
+})
+}
+
+function bolt_mode(cnvObj,boltNo,ls_dev){
+    let boltTF = !(cnvObj.bolt.get(boltNo));
+    cnvObj.bolt.set(boltNo,boltTF);
+    cnvObj.write_work(cnvObj.workX,cnvObj.workY);
     
+    /*let l_dev_name = ls_dev[cnvObj.boltLs["left"][boltNo]];
+    let l_device = str_dev(l_dev_name);
+    alldevice[l_device["header"]].set(l_device["index"],boltTF);
+    let r_dev_name = ls_dev[cnvObj.boltLs["right"][boltNo]];
+    let r_device = str_dev(r_dev_name);
+    alldevice[r_device["header"]].set(r_device["index"],boltTF);*/
 }
 
 function get_canvas(canvas_id){
@@ -170,13 +185,36 @@ function str_dev(str){
 }
 
 function lanp_con(lanp_info){
-    device = str_dev(lanp_info[1]);
-    if(alldevice[device['header']].get(device['index'])){
-        lanp_info[0].style.backgroundColor = "red";
-    }
-    else{
-        lanp_info[0].style.backgroundColor = 'rgba(0,0,0,0)';
-    }
+    lanp_info.forEach(lanp_data =>{
+        device = str_dev(lanp_data[1]);
+        if(alldevice[device['header']].get(device['index'])){
+            lanp_data[0].style.backgroundColor = "red";
+        }
+        else{
+            lanp_data[0].style.backgroundColor = 'rgba(0,0,0,0)';
+        }
+    })
+}
+
+function ls_con(convObj,alldevice,ls_dev){
+        for(let i=0;i<convObj.boltMany;i++){
+            let l_lsValue = false;
+            let l_dev_name = ls_dev[convObj.boltLs["left"][i]];
+            let l_device = str_dev(l_dev_name);
+            if(convObj.bolt.get(i) && convObj.edge["left"]){
+                l_lsValue = true;
+            }
+            alldevice[l_device["header"]].set(l_device["index"],l_lsValue);
+        }
+        for(let i=0;i<1;i++){
+            let r_lsValue = false;
+            let r_dev_name = ls_dev[convObj.boltLs["right"][i]];
+            let r_device = str_dev(r_dev_name);
+            if(convObj.bolt.get(i) && convObj.edge['right']){
+                r_lsValue = true;
+            }
+            alldevice[r_device["header"]].set(r_device["index"],r_lsValue);
+        }
 }
 
 //******************************//
@@ -203,6 +241,12 @@ const btn_id = [
 ["pb3","x7"],
 ["pb4","x8"]];
 
+const bolt_id = [
+["bolt1",3],
+["bolt2",2],
+["bolt3",1],
+["bolt4",0]];
+
 const lanp_id = [
 [document.getElementById("pl1"),"y2"],
 [document.getElementById("pl2"),"y3"],
@@ -215,21 +259,23 @@ const conv = ["conveyor1"];
 const con_info = get_canvas(conv);
 const start_workX = con_info[0][0].width - workW/2;
 const start_workY = con_info[0][0].height/2;
-const canv = new conveyor(con_info[0],190,95);
-canv.write_work(start_workX,start_workY);
 
 //Initial process
-settingid(btn_id);
+const canv = new conveyor(con_info[0],workW,workH);
+canv.write_work(start_workX,start_workY);
+settingpb(alldevice,btn_id);
+settingbolt(canv,bolt_id,ls_dev);
 //Gameloop
 requestAnimationFrame(gameloop);
 function gameloop(){
     //Fill in the process
-    lanp_con(lanp_id[0]);
-    if(alldevice['y'].get(2) && !(alldevice['y'].get(3))){
+    if(alldevice['y'].get(0) && !(alldevice['y'].get(1))){
         canv.move_left(alldevice,ls_dev);
     }
-    else if(!(alldevice['y'].get(2)) && alldevice['y'].get(3)){
+    else if(!(alldevice['y'].get(1)) && alldevice['y'].get(0)){
         canv.move_right(alldevice,ls_dev);
     }
+    lanp_con(lanp_id);
+    ls_con(canv,alldevice,ls_dev);
     requestAnimationFrame(gameloop);
 }
